@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="PredictPane" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="agh.controllers.PredictController">
+    <children>
+        <BorderPane layoutX="-6.0" layoutY="-6.0">
+            <center>
+                <Pane prefHeight="660.0" prefWidth="923.0" BorderPane.alignment="CENTER">
+                    <children>
+                        <Separator layoutX="3.0" layoutY="-2.0" prefHeight="2.0" prefWidth="920.0" />
+                        <Label layoutX="336.0" layoutY="19.0" text="Podaj udział metali w stopie (%)">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                        <Label layoutX="65.0" layoutY="58.0" text="Aluminium" />
+                        <TextField fx:id="aluminium" layoutX="140.0" layoutY="54.0" prefWidth="50.0" />
+                        <Label layoutX="77.0" layoutY="91.0" text="Krzem" />
+                        <TextField fx:id="krzem" layoutX="140.0" layoutY="89.0" prefWidth="50.0" />
+                        <Label layoutX="231.0" layoutY="58.0" text="Magnez" />
+                        <TextField fx:id="magnez" layoutX="287.0" layoutY="54.0" prefWidth="50.0" />
+                        <Label layoutX="236.0" layoutY="93.0" text="Miedź" />
+                        <TextField fx:id="miedz" layoutX="287.0" layoutY="89.0" prefWidth="50.0" />
+                        <Label layoutX="382.0" layoutY="58.0" text="Cynk" />
+                        <TextField fx:id="cynk" layoutX="426.0" layoutY="54.0" prefWidth="50.0" />
+                        <Label layoutX="381.0" layoutY="93.0" text="Cyna" />
+                        <TextField fx:id="cyna" layoutX="426.0" layoutY="89.0" prefWidth="50.0" />
+                        <Label layoutX="535.0" layoutY="58.0" text="Nikiel" />
+                        <TextField fx:id="nikiel" layoutX="585.0" layoutY="54.0" prefWidth="50.0" />
+                        <Label layoutX="532.0" layoutY="93.0" text="Żelazo" />
+                        <TextField fx:id="zelazo" layoutX="585.0" layoutY="89.0" prefWidth="50.0" />
+                        <Label layoutX="698.0" layoutY="58.0" text="Ołów" />
+                        <TextField fx:id="olow" layoutX="740.0" layoutY="54.0" prefWidth="50.0" />
+                        <Label layoutX="77.0" layoutY="150.0" text="Gotowe stopy" />
+                        <ChoiceBox fx:id="stops" layoutX="183.0" layoutY="146.0" prefHeight="7.0" prefWidth="113.0" />
+                        <Label layoutX="549.0" layoutY="150.0" text="Do wykorzystania pozostało" />
+                        <TextField fx:id="remained" editable="false" layoutX="740.0" layoutY="146.0" prefWidth="50.0" />
+                        <Label layoutX="298.0" layoutY="204.0" text="Podaj parametry wytapiania (℃, min, kg)" wrapText="true">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                        <Label layoutX="59.0" layoutY="243.0" text="Temperatura wytapiania" />
+                        <TextField fx:id="temp" layoutX="231.0" layoutY="239.0" prefWidth="60.0" />
+                        <Label layoutX="72.0" layoutY="283.0" text="Czas wytapiania" />
+                        <TextField fx:id="time" layoutX="231.0" layoutY="278.0" prefWidth="60.0" />
+                        <Label layoutX="311.0" layoutY="243.0" text="Temperatura studzenia I" />
+                        <TextField fx:id="temp1" layoutX="483.0" layoutY="239.0" prefWidth="60.0" />
+                        <Label layoutX="320.0" layoutY="283.0" text="Czas podgrzewania I" />
+                        <TextField fx:id="time1" layoutX="483.0" layoutY="279.0" prefWidth="60.0" />
+                        <Label layoutX="569.0" layoutY="243.0" text="Temperatura studzenia II" />
+                        <TextField fx:id="temp2" layoutX="740.0" layoutY="239.0" prefWidth="60.0" />
+                        <Label layoutX="579.0" layoutY="282.0" text="Czas podgrzewania II" />
+                        <TextField fx:id="time2" layoutX="740.0" layoutY="278.0" prefWidth="60.0" />
+                        <Label layoutX="83.0" layoutY="322.0" text="Masa stopu" />
+                        <TextField fx:id="mass" layoutX="231.0" layoutY="318.0" prefWidth="60.0" />
+                        <Label layoutX="421.0" layoutY="322.0" text="Stopień uszlachetniania" />
+                        <ChoiceBox fx:id="upgrades" layoutX="616.0" layoutY="318.0" prefHeight="25.0" prefWidth="185.0" />
+                        <Label layoutX="435.0" layoutY="374.0" text="Wyniki">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                        <Label layoutX="103.0" layoutY="494.0" text="Wybierz klasyfikator" />
+                        <ChoiceBox fx:id="classifiers" layoutX="32.0" layoutY="522.0" prefHeight="25.0" prefWidth="248.0" />
+                        <Button layoutX="315.0" layoutY="503.0" mnemonicParsing="false" onAction="#handlePrediction" prefHeight="50.0" prefWidth="160.0" text="Pokaż wynik" />
+                        <Button layoutX="140.0" layoutY="578.0" mnemonicParsing="false" onAction="#handleProcessing" prefHeight="50.0" text="Pokaż przebieg wyznaczania wyników" textAlignment="CENTER" wrapText="true" />
+                        <Label layoutX="82.0" layoutY="415.0" text="Przewidywana jakość">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                        <TextField fx:id="quality" editable="false" layoutX="104.0" layoutY="450.0" prefHeight="27.0" prefWidth="122.0" />
+
+
+                        <Label layoutX="359.0" layoutY="415.0" text="Koszt (zł)">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                        <TextField fx:id="cost" editable="false" layoutX="334.0" layoutY="450.0" prefHeight="27.0" prefWidth="122.0" />
+                        <Label layoutX="687.0" layoutY="401.0" text="Wsad">
+                            <font>
+                                <Font size="18.0" />
+                            </font>
+                        </Label>
+                        <TextArea fx:id="input" editable="false" layoutX="563.0" layoutY="428.0" prefHeight="200.0" prefWidth="292.0" />
+
+
+                        <Separator layoutX="-6.0" layoutY="191.0" prefHeight="0.0" prefWidth="930.0" />
+                        <Separator layoutX="4.0" layoutY="360.0" prefHeight="0.0" prefWidth="917.0" />
+
+                    </children>
+                </Pane>
+            </center>
+            <top>
+                <Pane prefHeight="78.0" prefWidth="923.0" BorderPane.alignment="CENTER">
+                    <children>
+                        <Label layoutX="341.0" layoutY="20.0" text="Przewidywanie">
+                            <font>
+                                <Font size="36.0" />
+                            </font>
+                        </Label>
+                        <Button layoutX="45.0" layoutY="27.0" mnemonicParsing="false" onAction="#handleBack" prefHeight="38.0" prefWidth="75.0" text="Powrót" />
+                    </children>
+                </Pane>
+            </top>
+        </BorderPane>
+    </children>
+
+</AnchorPane>
