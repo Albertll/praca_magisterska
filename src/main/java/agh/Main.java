@@ -1,8 +1,8 @@
 package agh;
 
 import agh.agents.InterfaceUI;
-import agh.classification.ProductionData;
 import agh.agents.MainContainer;
+import agh.classification.ProductionData;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 import jade.wrapper.StaleProxyException;
@@ -33,19 +33,21 @@ public class Main extends Application {
     public static void main(String[] args) throws IOException, InterruptedException, ControllerException {
 
         try {
-            AgentController prod = MainContainer.cc.createNewAgent("Production-agent",
-                    "agh.agents.ProductionAgent", null);
-            prod.start();
+            AgentController managementAgent = MainContainer.cc.createNewAgent("Management-agent",
+                    "agh.agents.ManagementAgent", null);
+            managementAgent.start();
+
             AgentController rma = MainContainer.cc.createNewAgent("rma", "jade.tools.rma.rma", null);
             rma.start();
+
         } catch (StaleProxyException e) {
             e.printStackTrace();
         }
 
+        CPUUtils.sleep(1000);
+
         AgentController ac = MainContainer.cc.getAgent("UI-agent");
         InterfaceUI uiObj = ac.getO2AInterface(InterfaceUI.class);
         uiObj.startTraining();
-
-        launch(args);
     }
 }

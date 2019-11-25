@@ -1,91 +1,161 @@
 package agh.agents;
 
+import agh.CPUUtils;
 import agh.classification.ProductionData;
-import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
 import weka.classifiers.Classifier;
+import weka.classifiers.functions.MultilayerPerceptron;
+import weka.classifiers.lazy.KStar;
+import weka.classifiers.meta.Bagging;
+import weka.classifiers.meta.Vote;
+import weka.classifiers.rules.DecisionTable;
+import weka.classifiers.rules.M5Rules;
+import weka.classifiers.trees.M5P;
+import weka.classifiers.trees.REPTree;
+import weka.classifiers.trees.RandomForest;
+import weka.classifiers.trees.RandomTree;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils;
 
-import java.util.ArrayList;
-
-import static agh.Main.productionData;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class LearningAgent extends Agent {
 
-    private Classifier[] classififiers = new Classifier[]{productionData.getMlp(), productionData.getForest(), productionData.getM5p(), productionData.getVote()};
+    public static int Iteration;
 
     protected void setup() {
-        Object[] args = getArguments();
 
-        addBehaviour(new CyclicBehaviour(this) {
-            public void action() {
-                ACLMessage reply;
+        List<Classifier> classifiers = new ArrayList<Classifier>();
+        List<ProductionData> productionDatas = new ArrayList<ProductionData>();
 
-                ArrayList<MessageTemplate> templates = new ArrayList<>();
-                templates.add(MessageTemplate.MatchPerformative(AgentMessages.CHECK_AGENT));
-                templates.add(MessageTemplate.MatchPerformative(AgentMessages.START_LEARNING_MLP));
-                templates.add(MessageTemplate.MatchPerformative(AgentMessages.START_LEARNING_M5P));
-                templates.add(MessageTemplate.MatchPerformative(AgentMessages.START_LEARNING_FOREST));
-                templates.add(MessageTemplate.MatchPerformative(AgentMessages.START_LEARNING_VOTE));
 
-                ACLMessage[] checkMsg = new ACLMessage[templates.size()];
-                int counter = 0;
-                for (MessageTemplate checkState : templates) {
-                    checkMsg[counter++] = receive(checkState);
-                }
-                for (ACLMessage msg : checkMsg) {
-                    if (msg != null) {
-                        switch (msg.getPerformative()) {
-                            case (AgentMessages.CHECK_AGENT):
-                                reply = new ACLMessage(AgentMessages.CHECK_AGENT);
-                                reply.setContent("success");
-                                reply.addReceiver(new AID(args[0].toString(), AID.ISLOCALNAME));
-                                send(reply);
-                                break;
-                            case (AgentMessages.START_LEARNING_MLP):
-                                System.out.println("Training mlp in agent");
-                                productionData.train("TrainingData.arff", classififiers[0]);
-                                reply = new ACLMessage(AgentMessages.START_LEARNING_MLP_ACK);
-                                System.out.println("Training mlp done");
-                                reply.setContent("success ");
-                                reply.addReceiver(new AID(args[0].toString(), AID.ISLOCALNAME));
-                                send(reply);
-                                break;
-                            case (AgentMessages.START_LEARNING_M5P):
-                                System.out.println("Training m5p in agent");
-                                productionData.train("TrainingData.arff", classififiers[2]);
-                                reply = new ACLMessage(AgentMessages.START_LEARNING_M5P_ACK);
-                                System.out.println("Training m5p done");
-                                reply.setContent("success ");
-                                reply.addReceiver(new AID(args[0].toString(), AID.ISLOCALNAME));
-                                send(reply);
-                                break;
-                            case (AgentMessages.START_LEARNING_FOREST):
-                                System.out.println("Training forest in agent");
-                                productionData.train("TrainingData.arff", classififiers[1]);
-                                reply = new ACLMessage(AgentMessages.START_LEARNING_FOREST_ACK);
-                                System.out.println("Training forest done");
-                                reply.setContent("success ");
-                                reply.addReceiver(new AID(args[0].toString(), AID.ISLOCALNAME));
-                                send(reply);
-                                break;
-                            case (AgentMessages.START_LEARNING_VOTE):
-                                System.out.println("Training vote in agent");
-                                productionData.train("TrainingData.arff", classififiers[3]);
-                                reply = new ACLMessage(AgentMessages.START_LEARNING_VOTE_ACK);
-                                System.out.println("Training vote done");
-                                reply.setContent("success ");
-                                reply.addReceiver(new AID(args[0].toString(), AID.ISLOCALNAME));
-                                send(reply);
-                                break;
-                        }
-                    }
-                }
+        classifiers.add(new MultilayerPerceptron());
+        classifiers.add(new M5P());
+        classifiers.add(new RandomForest());
+        Vote vote = new Vote();
+        vote.setClassifiers(new Classifier[]{new M5P(), new RandomForest(), new MultilayerPerceptron()});
+        classifiers.add(vote);
+        classifiers.add(new Bagging());
+        classifiers.add(new REPTree());
+        classifiers.add(new DecisionTable());
+        classifiers.add(new KStar());
+        classifiers.add(new M5Rules());
+        RandomTree r = new RandomTree();
+        classifiers.add(r);
 
-                block();
+        for (Classifier classifier : classifiers) {
+            ProductionData productionData = new ProductionData();
+            productionData.train(DataSetManager.dataSource, classifier);
+            productionDatas.add(productionData);
+        }
+
+
+        ConverterUtils.DataSource source1 = null;
+        Instances trainData = null;
+        try {
+            source1 = new ConverterUtils.DataSource(DataSetManager.dataSource);
+            trainData = source1.getDataSet();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (trainData.classIndex() == -1)
+            trainData.setClassIndex(trainData.numAttributes() - 1);
+
+
+        Map<String, List<String>> dataSourceParameters = DataSetManager.getParameters(DataSetManager.dataSource);
+        List<Map<String, String>> mixedValues = DataSetManager.getMixedValues(DataSetManager.dataSource);
+
+
+        Random rand = new Random();
+
+
+        //int minQuality = 10;
+        for (double minQuality = DataSetManager.minQuality; minQuality <= DataSetManager.maxQuality; minQuality++) {
+            int statesSize = mixedValues.size();
+            int actions = 50;
+             double discountFactor = 0.95;
+             double learningRate = 0.25;
+
+
+            double[][] qMatrix = new double[statesSize][];
+            for (int i = 0; i < statesSize; i++) {
+                qMatrix[i] = new double[actions];
             }
-        });
+
+
+            for (int iterN = 0; iterN < DataSetManager.learningSubsystemIterations; iterN++) {
+
+                int i = rand.nextInt(mixedValues.size());
+                Map<String, String> mixedValue = mixedValues.get(i);
+
+                double quality = DataSetManager.getQuality(DataSetManager.dataSource, mixedValue);
+                qMatrix[i][0] = quality;
+                double dQ = quality - minQuality;
+                qMatrix[i][2] = dQ;
+
+                double cost = DataSetManager.getCost(mixedValue);
+                qMatrix[i][1] = cost;
+
+                double baseCost = DataSetManager.baseCost;
+
+                // qMatrix[i][3] = cost + (dQ < 0 ? 300 : 0);
+                double deltaCost = cost * (quality < minQuality ? 1.5 : 1) - baseCost;
+                qMatrix[i][3] = deltaCost;
+                deltaCost = 2 * baseCost - cost * (quality < minQuality ? 1.5 : 1);
+
+                double qualityWage = DataSetManager.learningSubsystemQualityWage;
+
+
+                Instance instance = trainData.get(i);
+                try {
+                    int ci = rand.nextInt(classifiers.size());
+
+                    double classifiedQuality = classifiers.get(ci).classifyInstance(instance);
+
+                    double deltaQuality = -(Math.abs(1 - quality / classifiedQuality)) * 100;
+
+
+                    deltaCost = 2 * baseCost - cost * (classifiedQuality < minQuality ? 1.5 : 1);
+
+                    qMatrix[i][4 + ci] = classifiedQuality;
+                    qMatrix[i][15 + ci] = deltaQuality;
+                    qMatrix[i][15 + ci] = deltaQuality * qualityWage + deltaCost * (1 - qualityWage);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            double[] max = new double[16];
+            double maxx = -1;
+            int maxi = 999999;
+            double maxiq = -1;
+            for (double[] qvalue : qMatrix) {
+                for (int i = 0; i < classifiers.size(); i++)
+                    if (qvalue[15 + i] > maxx) {
+                        max = qvalue;
+                        maxx = qvalue[15 + i];
+                        maxi = i;
+                        maxiq = qvalue[4 + i];
+                    }
+            }
+
+            System.out.println(minQuality +
+                    "\t" + max[0] +
+                    "\t" + maxiq +
+                    "\t" + max[1] +
+                    "\t" + maxx +
+                    ", " + classifiers.get(maxi).getClass().getSimpleName());
+        }
+
+        System.out.println("end");
+
+
     }
 }
+
